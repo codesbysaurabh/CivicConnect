@@ -1,0 +1,66 @@
+/* Screen-specific styles: login, admin, empty state, toast, scrollbars */
+/* Login screen */
+.login-screen {
+  min-height: 100vh;
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 1.75rem;
+  color: white;
+}
+.brand-mark { display: flex; align-items: center; gap: 10px; margin-bottom: 2.5rem; }
+.brand-pin {
+  width: 36px; height: 36px;
+  background: var(--mint);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+}
+.brand-name { font-size: 17px; font-weight: 700; letter-spacing: 1px; }
+
+/* Admin table */
+.admin-layout { display: flex; min-height: 100vh; }
+.admin-sidebar {
+  width: 230px;
+  background: var(--navy);
+  color: white;
+  padding: 1.5rem 1.2rem;
+  flex-shrink: 0;
+}
+.admin-main { flex: 1; padding: 1.75rem 2rem; overflow-x: auto; }
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0.65rem 0.8rem;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #C7D2DC;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+.sidebar-link.active { background: rgba(255,255,255,0.08); color: white; font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { text-align: left; padding: 0.7rem 0.8rem; color: var(--slate); font-weight: 600; font-size: 12px; border-bottom: 1.5px solid var(--line); }
+td { padding: 0.8rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:hover td { background: rgba(2,128,144,0.04); }
+select.inline-select {
+  font-family: inherit; font-size: 13px; padding: 0.4rem 0.6rem;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--white); color: inherit;
+}
+
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--slate-light); }
+.empty-state .big-icon { font-size: 40px; margin-bottom: 0.8rem; }
+
+.row-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-gap { display: flex; gap: 8px; align-items: center; }
+
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+  background: var(--navy); color: white; padding: 0.7rem 1.2rem;
+  border-radius: 10px; font-size: 13px; z-index: 50;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+.error-text { color: var(--danger); font-size: 12px; margin-top: -0.7rem; margin-bottom: 1rem; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
