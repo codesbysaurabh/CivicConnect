@@ -10,7 +10,7 @@ export function OfflineBanner() {
         fontWeight: 600,
       }}
     >
-      Demo mode — reports in this session won't be saved after you close the tab
+      Backend connection unavailable — reports may not load or save
     </div>
   );
 }

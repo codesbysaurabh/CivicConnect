@@ -16,7 +16,7 @@ export function RateScreen({ complaint, onBack, onSubmitRating }) {
       return;
     }
     setError('');
-    onSubmitRating(complaint.id, rating);
+    onSubmitRating(complaint.id, rating, comment);
   };
 
   return (

@@ -11,11 +11,11 @@ export function ReportDetailScreen({ complaint, onBack, onRate }) {
         <button className="icon-btn" onClick={onBack} aria-label="Back">
           ←
         </button>
-        <div className="topbar-title">{complaint.id}</div>
+        <div className="topbar-title">{complaint.ticketId || complaint.id}</div>
         <div style={{ width: 34 }}></div>
       </div>
       <div className="content">
-        {complaint.photo && complaint.photo.startsWith('data:') ? (
+        {complaint.photo ? (
           <img
             src={complaint.photo}
             alt={`Photo of ${cat.label.toLowerCase()} issue`}

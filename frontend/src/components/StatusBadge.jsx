@@ -2,6 +2,8 @@ export function StatusBadge({ status }) {
   const map = {
     submitted: { cls: 'badge-submitted', label: 'Submitted' },
     progress: { cls: 'badge-progress', label: 'In progress' },
+    assigned: { cls: 'badge-progress', label: 'Assigned' },
+    in_progress: { cls: 'badge-progress', label: 'In progress' },
     resolved: { cls: 'badge-resolved', label: 'Resolved' },
   };
   const s = map[status] || map.submitted;

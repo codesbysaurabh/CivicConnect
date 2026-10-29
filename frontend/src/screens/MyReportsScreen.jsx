@@ -66,7 +66,7 @@ export function MyReportsScreen({ complaints, onOpen }) {
                       {categoryMeta(c.category).label}
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--slate-light)' }}>
-                      {c.id} · {timeAgo(c.createdAt)}
+                      {c.ticketId || c.id} · {timeAgo(c.createdAt)}
                     </div>
                   </div>
                 </div>

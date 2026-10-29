@@ -6,7 +6,7 @@
   "type": "module",
   "workspaces": [
     "frontend",
-    "civicconnect-backend"
+    "backend"
   ],
   "engines": {
     "node": ">=20"
@@ -18,8 +18,8 @@
     "backend:dev": "npm run dev --workspace civicconnect-backend",
     "backend:start": "npm run start --workspace civicconnect-backend",
     "backend:seed": "npm run seed --workspace civicconnect-backend",
-    "lint": "eslint frontend civicconnect-backend",
-    "lint:fix": "eslint frontend civicconnect-backend --fix",
+    "lint": "eslint frontend backend",
+    "lint:fix": "eslint frontend backend --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "npm run test --workspace frontend",

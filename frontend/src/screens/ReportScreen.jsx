@@ -7,6 +7,7 @@ export function ReportScreen({ onSubmit, onBack }) {
   const [category, setCategory] = useState(null);
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
+  const [coordinates, setCoordinates] = useState(null);
   const [gpsLocked, setGpsLocked] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -14,22 +15,24 @@ export function ReportScreen({ onSubmit, onBack }) {
     setPhoto(dataUrl);
     setGpsLocked(false);
     setLocation('');
+    setCoordinates(null);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
+          setCoordinates({ lat: latitude, lng: longitude });
           setGpsLocked(true);
           setLocation(`Auto-detected: ${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E`);
         },
         () => {
           setGpsLocked(true);
-          setLocation('Location unavailable — add manually if needed');
+          setLocation('Location unavailable — report can still be submitted');
         },
         { timeout: 6000 }
       );
     } else {
       setGpsLocked(true);
-      setLocation('Location unavailable — add manually if needed');
+      setLocation('Location unavailable — report can still be submitted');
     }
   };
 
@@ -37,6 +40,7 @@ export function ReportScreen({ onSubmit, onBack }) {
     setPhoto(null);
     setGpsLocked(false);
     setLocation('');
+    setCoordinates(null);
   };
 
   const handleSubmit = () => {
@@ -51,6 +55,8 @@ export function ReportScreen({ onSubmit, onBack }) {
       category,
       description,
       location: location || 'Location pending GPS',
+      address: location,
+      ...(coordinates && { lat: coordinates.lat, lng: coordinates.lng }),
       photo,
     });
   };
@@ -79,11 +85,12 @@ export function ReportScreen({ onSubmit, onBack }) {
             }}
           >
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--teal)', marginBottom: 2 }}>
-              <Icon name="pin" size={14} /> Location captured
+              <Icon name="pin" size={14} /> {coordinates ? 'Location captured' : 'Location unavailable'}
             </div>
             <div style={{ fontSize: 12.5, color: 'var(--navy)' }}>{location}</div>
           </div>
         )}
+        {errors.location && <div className="error-text">{errors.location}</div>}
 
         <label className="field-label">Category</label>
         <div className="chip-grid">

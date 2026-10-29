@@ -1,47 +1,35 @@
 # Architecture
 
-## Layers
+## Frontend layers
 
+```text
+screens / components   render views and collect user input
+        |
+      App.jsx          owns screen navigation and invokes API methods
+        |
+ hooks/useComplaints   loads feed, citizen reports and admin data
+        |
+services/complaints    adapts app operations to the selected data source
 ```
-screens / components   presentational React, no data fetching
-        |
-      App.jsx          owns navigation + UI state, calls API methods
-        |
- hooks/useComplaints   resolves the API once, subscribes to live data
-        |
-services/complaints    ComplaintsApi implementations (memory, claudeDb, future REST)
-```
 
-## The ComplaintsApi contract
+The `ComplaintsApi` contract is documented in `frontend/src/services/complaints/types.js`.
 
-Defined as JSDoc typedefs in `frontend/src/services/complaints/types.js`:
+| Adapter | Use |
+| --- | --- |
+| `restApi.js` | Authenticated users; sends JWTs to the Express API and polls for updates every 15 seconds. |
+| `memoryApi.js` | In-memory demo data for the unauthenticated fallback; data resets when the page reloads. |
+| `claudeDbApi.js` | Persistent Claude artifact database when that runtime is available. |
 
-`getComplaints`, `subscribeComplaints`, `getComplaint`, `createComplaint`, `updateStatus`,
-`submitFeedback`, `seedIfEmpty`.
+`services/complaints/index.js` selects the REST adapter after authentication or when `VITE_API_URL` is configured. The REST adapter translates the backend's status names and MongoDB records into the view model, converts captured photos to multipart uploads, and handles reports with or without GPS coordinates.
 
-Implementations:
+## Backend
 
-| File             | When it is used                                                            |
-| ---------------- | -------------------------------------------------------------------------- |
-| `memoryApi.js`   | Default for local dev and tests. Data resets on reload.                    |
-| `claudeDbApi.js` | Only when running as a published Claude artifact with the `db` capability. |
+The Express API is in `backend/`. MongoDB models live in `backend/src/models/`; routes are grouped by authentication, citizen complaints, and administration. JWT authentication protects complaint and admin endpoints. ImageKit stores photos uploaded with new reports.
 
-`frontend/src/services/complaints/index.js` (`resolveComplaintsApi`) chooses between them.
+The REST API contract is documented in [API.md](API.md). The frontend uses `/complaints` for the recent feed, `/complaints/mine` for the signed-in user's reports, and `/admin/*` for administrator views and updates.
 
-## Express API
+## Navigation and styling
 
-The repository includes an Express/MongoDB API in `civicconnect-backend/`. Its endpoints and authentication are documented in `docs/API.md`. The frontend is not connected to this service yet.
+Navigation is a plain state machine (`SCREENS` in `frontend/src/constants/screens.js`). Adopt React Router if deep links become necessary.
 
-To integrate it, implement `frontend/src/services/complaints/restApi.js` with a `buildRestApi(baseUrl)` adapter that maps its model and methods to the REST endpoints. Select it from `resolveComplaintsApi` when `import.meta.env.VITE_API_BASE_URL` is set. The adapter must handle authentication, multipart photo upload, and update notifications (polling or SSE/WebSocket).
-
-No screen or component should need to change.
-
-## Routing
-
-Navigation is a plain state machine (`SCREENS` in `frontend/src/constants/screens.js`). It was kept deliberately
-simple for the MVP; adopt `react-router` when deep links are needed.
-
-## Styling
-
-Plain CSS with design tokens in `frontend/src/styles/variables.css` (including dark-mode overrides). Files are
-imported in order from `frontend/src/styles/index.css`.
+Styling uses plain CSS with design tokens in `frontend/src/styles/variables.css`. Styles are imported in order from `frontend/src/styles/index.css`.

@@ -6,6 +6,6 @@ export const STATUS = Object.freeze({
 
 export const STATUS_OPTIONS = [
   { id: STATUS.SUBMITTED, label: 'Submitted' },
-  { id: STATUS.PROGRESS, label: 'In progress' },
+  { id: 'progress', label: 'In progress' },
   { id: STATUS.RESOLVED, label: 'Resolved' },
 ];

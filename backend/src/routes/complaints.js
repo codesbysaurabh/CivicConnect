@@ -14,9 +14,12 @@ router.use(requireAuth);
 const createSchema = z.object({
   category: z.enum(CATEGORIES),
   description: z.string().trim().max(1000).optional().default(''),
-  lat: z.coerce.number().min(-90).max(90),
-  lng: z.coerce.number().min(-180).max(180),
+  lat: z.coerce.number().min(-90).max(90).optional(),
+  lng: z.coerce.number().min(-180).max(180).optional(),
   address: z.string().trim().max(300).optional().default(''),
+}).refine((body) => (body.lat === undefined) === (body.lng === undefined), {
+  message: 'Latitude and longitude must be provided together.',
+  path: ['lat'],
 });
 
 const newTicketId = () => `CC-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
@@ -44,7 +47,10 @@ router.post(
         category: body.category,
         description: body.description,
         photo,
-        location: { type: 'Point', coordinates: [body.lng, body.lat], address: body.address },
+        location: {
+          ...(body.lat !== undefined && { type: 'Point', coordinates: [body.lng, body.lat] }),
+          address: body.address,
+        },
         history: [{ status: 'submitted', note: 'Complaint submitted' }],
       });
       res.status(201).json({ complaint });

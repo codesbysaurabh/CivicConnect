@@ -13,8 +13,8 @@ const complaintSchema = new mongoose.Schema(
       fileId: String,
     },
     location: {
-      type: { type: String, enum: ['Point'], default: 'Point' },
-      coordinates: { type: [Number], required: true }, // [lng, lat]
+      type: { type: String, enum: ['Point'], default: undefined },
+      coordinates: { type: [Number], default: undefined }, // [lng, lat], omitted when GPS is unavailable
       address: { type: String, trim: true, maxlength: 300, default: '' },
     },
     status: { type: String, enum: STATUSES, default: 'submitted', index: true },

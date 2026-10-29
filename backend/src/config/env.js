@@ -37,10 +37,7 @@ export const env = {
   },
   jwtSecret: process.env.JWT_SECRET || 'dev-secret',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  adminPhones: list(process.env.ADMIN_PHONES),
-  otpMode: process.env.OTP_MODE || 'console',
-  devFixedOtp: nodeEnv === 'production' ? '' : process.env.DEV_FIXED_OTP || '',
-  otpTtlMinutes: Number(process.env.OTP_TTL_MINUTES) || 5,
+  adminEmails: list(process.env.ADMIN_EMAILS).map((email) => email.toLowerCase()),
 };
 
 if (env.isProd && env.jwtSecret.length < 32) {

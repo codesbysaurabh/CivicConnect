@@ -18,6 +18,7 @@ const ICON_PATHS = {
   chart: '<path d="M4 20V4M4 20h16M8 16v-5M13 16V8M18 16v-3"/>',
   home: '<path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
+  logout: '<path d="M10 17l5-5-5-5M15 12H3M12 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/>',
   plus: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
   settings:
     '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/>',
