@@ -1,32 +1,43 @@
-# Target REST API
+# CivicConnect API
 
-The service layer mirrors this contract, so each method maps to one endpoint. This is the intended
-shape for the backend; it is not implemented yet.
+The Express API lives in `civicconnect-backend/`. All routes below are prefixed with `/api`. Routes under `/complaints` and `/admin` require `Authorization: Bearer <token>`; auth routes issue and inspect tokens. Responses use JSON except complaint creation, which accepts `multipart/form-data`.
 
-| Method | Endpoint                      | Service method        | Notes                                   |
-| ------ | ----------------------------- | --------------------- | --------------------------------------- |
-| GET    | `/complaints`                 | `getComplaints`       | Newest first, paginated                 |
-| GET    | `/complaints/:id`             | `getComplaint`        | 404 when missing                        |
-| POST   | `/complaints`                 | `createComplaint`     | Body: category, description, location, photo |
-| PATCH  | `/complaints/:id`             | `updateStatus`        | Body: status, assignedTo (admin only)   |
-| POST   | `/complaints/:id/feedback`    | `submitFeedback`      | Body: rating (1-5), resolved complaints only |
+## Authentication
 
-## Complaint
+| Method | Endpoint            | Body / response                       |
+| ------ | ------------------- | ------------------------------------- |
+| POST   | `/auth/request-otp` | `{ phone }`                           |
+| POST   | `/auth/verify-otp`  | `{ phone, code }` → `{ token, user }` |
+| GET    | `/auth/me`          | Current user                          |
+| PATCH  | `/auth/me`          | `{ name }` → updated user             |
 
-```json
-{
-  "id": "CC-1042",
-  "category": "pothole",
-  "description": "Large pothole near the bus stop.",
-  "status": "submitted | progress | resolved",
-  "createdAt": "2026-10-14T09:12:00Z",
-  "resolvedAt": null,
-  "location": "MG Road, near Sector 14 bus stop",
-  "photo": "https://.../photo.jpg",
-  "rating": null,
-  "assignedTo": "Ramesh K.",
-  "timeline": [{ "label": "Submitted", "time": "Oct 14, 9:12 AM", "done": true }]
-}
-```
+The current OTP utility logs the code to the API console. A real SMS provider is needed before production use.
 
-Categories: `pothole`, `garbage`, `streetlight`, `water`, `road`, `sanitation`.
+## Citizen complaints
+
+| Method | Endpoint                 | Details                                                                                         |
+| ------ | ------------------------ | ----------------------------------------------------------------------------------------------- |
+| POST   | `/complaints`            | Multipart fields: required `photo`, `category`, `lat`, `lng`; optional `description`, `address` |
+| GET    | `/complaints`            | Feed; optional `category`, `page`, `limit`                                                      |
+| GET    | `/complaints/mine`       | Current user's complaints                                                                       |
+| GET    | `/complaints/:id`        | One complaint                                                                                   |
+| POST   | `/complaints/:id/rating` | `{ stars: 1..5, comment? }`; reporter only, resolved complaints only, once                      |
+
+Categories are `pothole`, `garbage`, `streetlight`, `water`, `drainage`, and `other`. Statuses are `submitted`, `assigned`, `in_progress`, and `resolved`.
+
+## Administration
+
+Admin routes require a user whose phone is listed in `ADMIN_PHONES`.
+
+| Method | Endpoint                | Details                                                                    |
+| ------ | ----------------------- | -------------------------------------------------------------------------- |
+| GET    | `/admin/complaints`     | Optional `status`, `category`, `assignee`, `page`, `limit`                 |
+| PATCH  | `/admin/complaints/:id` | `{ status?, assignee?, note? }`; assigning a new complaint sets `assigned` |
+| GET    | `/admin/workers`        | List active workers                                                        |
+| POST   | `/admin/workers`        | `{ name, phone?, area? }`                                                  |
+
+`GET /health` is public and returns API and database health state.
+
+## Frontend integration status
+
+The frontend currently uses an in-memory demo adapter or the Claude artifact database adapter. A REST adapter that maps the frontend's complaint model to these endpoints has not been implemented yet.

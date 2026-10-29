@@ -2,33 +2,35 @@
   "name": "civicconnect",
   "version": "0.1.0",
   "private": true,
-  "description": "CivicConnect Phase 1 MVP: citizens report civic issues, admins triage and resolve them.",
+  "description": "CivicConnect frontend and backend monorepo.",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "workspaces": [
+    "frontend",
+    "civicconnect-backend"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "dev": "npm run dev --workspace frontend",
+    "build": "npm run build --workspace frontend",
+    "preview": "npm run preview --workspace frontend",
+    "backend:dev": "npm run dev --workspace civicconnect-backend",
+    "backend:start": "npm run start --workspace civicconnect-backend",
+    "backend:seed": "npm run seed --workspace civicconnect-backend",
+    "lint": "eslint frontend civicconnect-backend",
+    "lint:fix": "eslint frontend civicconnect-backend --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "dependencies": {
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "test": "npm run test --workspace frontend",
+    "test:watch": "npm run test:watch --workspace frontend"
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",
-    "@vitejs/plugin-react": "^4.3.2",
     "eslint": "^9.12.0",
     "eslint-plugin-react": "^7.37.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "globals": "^15.11.0",
-    "prettier": "^3.3.3",
-    "vite": "^5.4.8",
-    "vitest": "^2.1.2"
+    "prettier": "^3.3.3"
   }
 }

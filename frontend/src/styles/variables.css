@@ -1,0 +1,24 @@
+/* Design tokens: brand palette + dark-mode overrides */
+:root {
+  --navy: #1b2a4a;
+  --navy-light: #24365c;
+  --teal: #028090;
+  --mint: #02c39a;
+  --gold: #f4a825;
+  --offwhite: #f4f6f8;
+  --white: #ffffff;
+  --slate: #5a6b7a;
+  --slate-light: #8a99a6;
+  --line: #e1e6ea;
+  --danger: #d64545;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --offwhite: #11182a;
+    --white: #1a2338;
+    --slate: #a7b2bc;
+    --slate-light: #7a8795;
+    --line: #2b3650;
+  }
+}

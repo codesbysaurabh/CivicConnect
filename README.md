@@ -1,73 +1,69 @@
 # CivicConnect
 
-Phase 1 MVP of CivicConnect: citizens report civic issues (potholes, garbage, broken streetlights and
-so on) with a photo and location, track them through to resolution, and rate the outcome. Admins triage
-complaints and assign them to field workers.
+CivicConnect is a civic issue reporting project with a React/Vite web client and an Express/MongoDB API. The repository contains both applications, their configuration, API and architecture documentation, and CI workflow.
 
-> Status: front-end prototype running on mock data. There is no real backend or authentication yet.
+## Project status
 
-## Quick start
+The frontend is an MVP prototype and currently uses in-memory demo data (or the Claude artifact database when available). The Express API is implemented separately under `civicconnect-backend/`, but the frontend has not yet been wired to it. Production deployment therefore requires completing frontend/API integration and configuring a real SMS OTP provider, in addition to supplying the backend services below.
+
+## Requirements
+
+- Node.js 20 or newer (see `.nvmrc`)
+- npm
+- MongoDB and ImageKit credentials to run the API
+
+## Install and run
+
+Install dependencies for both apps from the repository root:
 
 ```bash
-nvm use            # Node 20 (see .nvmrc)
-npm install
-npm run dev        # http://localhost:5173
+npm ci
 ```
 
-| Script                 | Purpose                          |
-| ---------------------- | -------------------------------- |
-| `npm run dev`          | Start the Vite dev server        |
-| `npm run build`        | Production build into `dist/`    |
-| `npm run preview`      | Serve the production build       |
-| `npm run lint`         | ESLint                           |
-| `npm run format`       | Prettier (write). Run once after install, then add `npm run format:check` to CI |
-| `npm test`             | Unit tests (Vitest)              |
+Create the backend environment file from the safe example, then fill in the service credentials:
 
-## Using the prototype
-
-- **Login:** any 10-digit phone number, then any 4-digit code.
-- **Report an issue:** Report tab, take or upload a photo, pick a category, add a description.
-- **Admin view:** Admin tab in the bottom nav (wide table layout for changing status and assignee).
-- Without a backend, data lives in memory and resets on reload (the app shows a "Demo mode" banner).
-
-## Project structure
-
+```powershell
+Copy-Item civicconnect-backend/.env.example civicconnect-backend/.env
 ```
+
+Start each application in its own terminal:
+
+```bash
+npm run dev
+npm run backend:dev
+```
+
+The web app runs at `http://localhost:5173`; the API health endpoint is `http://localhost:5000/api/health`. For production, build the frontend with `npm run build` and start the API with `npm run backend:start`. Deploy the frontend static `frontend/dist/` directory and API as separately configured services.
+
+## Scripts
+
+| Command                 | Purpose                                     |
+| ----------------------- | ------------------------------------------- |
+| `npm run dev`           | Start the frontend development server       |
+| `npm run build`         | Build frontend assets into `frontend/dist/` |
+| `npm run preview`       | Preview the frontend production build       |
+| `npm run lint`          | Lint the frontend source                    |
+| `npm test`              | Run frontend unit tests                     |
+| `npm run backend:dev`   | Start the API in watch mode                 |
+| `npm run backend:start` | Start the API                               |
+| `npm run backend:seed`  | Seed sample field workers                   |
+
+Run `npm install` after changing dependencies in either workspace to update the shared lockfile. A fresh setup uses `npm ci` from the repository root.
+
+## Structure
+
+```text
 civicconnect/
-├── public/                  Static assets (favicon)
-├── docs/
-│   ├── ARCHITECTURE.md      How the app is layered, and how to swap in a real backend
-│   └── API.md               Target REST contract that the service layer mirrors
-├── src/
-│   ├── main.jsx             Entry point
-│   ├── App.jsx              Root component and state-based router
-│   ├── components/          Reusable UI (Icon, StatusBadge, CameraCapture, BottomNav, ...)
-│   ├── screens/             One file per screen (Login, Home, Report, MyReports, Detail, Rate, Admin)
-│   ├── hooks/               useComplaints: resolves the API and subscribes to live data
-│   ├── services/            Data access
-│   │   ├── photo.js         Client-side photo compression
-│   │   └── complaints/      ComplaintsApi implementations + factory + JSDoc types
-│   ├── constants/           Categories, statuses, screens, field workers
-│   ├── data/                Seed / demo data
-│   ├── config/              App-level config (demo user)
-│   ├── utils/               Pure helpers (time, ids)
-│   └── styles/              CSS split into tokens, base, layout, components, screens
-├── .github/workflows/ci.yml Lint, format check, test, build on every PR
-└── eslint.config.js, .prettierrc, .editorconfig, vite.config.js, package.json
+├── .github/workflows/       CI workflow
+├── civicconnect-backend/    Express API, MongoDB models, routes, middleware
+├── docs/                    API contract and architecture notes
+├── frontend/                React app, static assets, Vite config, dependencies
+├── package.json             Workspace scripts and shared tooling
+└── package-lock.json        Reproducible dependency lock for both apps
 ```
 
-## Architecture in one paragraph
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/API.md](docs/API.md), and [civicconnect-backend/README.md](civicconnect-backend/README.md) for details.
 
-Screens never talk to storage directly. They receive data and callbacks from `App.jsx`, which gets a
-`ComplaintsApi` from the `useComplaints` hook. The hook asks `services/complaints/index.js` for the best
-available implementation (in-memory today). Every implementation exposes the same method signatures, so
-moving to a real REST backend means adding one file and changing one line. See
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/API.md](docs/API.md).
+## Deployment configuration
 
-## Roadmap
-
-- Real authentication (phone OTP provider) replacing the mock login
-- REST `ComplaintsApi` implementation and image upload to object storage
-- Real map and reverse geocoding for the location card
-- Notifications, router (react-router) and role-based admin access
-- Component tests (Testing Library) and end-to-end tests (Playwright)
+Never commit `.env` files or production credentials. Configure `MONGODB_URI`, ImageKit keys, a strong `JWT_SECRET` (32+ characters), `CLIENT_ORIGIN`, and an SMS provider before deploying the API. The current API's OTP utility only logs codes to the server console; a production SMS integration is still required. The frontend currently uses mock/persistent artifact storage and does not call this API yet.
