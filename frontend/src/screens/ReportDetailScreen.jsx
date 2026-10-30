@@ -1,110 +1,149 @@
 import { Icon, StatusBadge } from '../components';
 import { categoryMeta } from '../constants/categories.js';
+import { timeAgo } from '../utils/time.js';
 
-export function ReportDetailScreen({ complaint, onBack, onRate }) {
-  if (!complaint) return null;
+export function ReportDetailScreen({ complaint, onBack, onRate, canRate = true }) {
+  if (!complaint)
+    return (
+      <main className="content page-content">
+        <div className="empty-state card">
+          <strong>Report not found</strong>
+          <button className="btn btn-outline" onClick={onBack}>
+            Back to reports
+          </button>
+        </div>
+      </main>
+    );
   const cat = categoryMeta(complaint.category);
 
   return (
-    <>
-      <div className="topbar">
-        <button className="icon-btn" onClick={onBack} aria-label="Back">
-          ←
+    <main className="content page-content detail-content">
+      <div className="page-back-row">
+        <button className="text-back" onClick={onBack}>
+          <span aria-hidden="true">←</span> Back to my reports
         </button>
-        <div className="topbar-title">{complaint.ticketId || complaint.id}</div>
-        <div style={{ width: 34 }}></div>
-      </div>
-      <div className="content">
-        {complaint.photo ? (
-          <img
-            src={complaint.photo}
-            alt={`Photo of ${cat.label.toLowerCase()} issue`}
-            style={{
-              width: '100%',
-              aspectRatio: '4/3',
-              objectFit: 'cover',
-              borderRadius: 14,
-              marginBottom: '1rem',
-            }}
-          />
-        ) : (
-          <div
-            style={{
-              width: '100%',
-              aspectRatio: '4/3',
-              background: 'linear-gradient(135deg, #3A5068, #1B2A4A)',
-              borderRadius: 14,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 50,
-              marginBottom: '1rem',
-            }}
-          >
-            <Icon name={cat.icon} size={56} style={{ color: 'white' }} />
-          </div>
-        )}
-
-        <div className="row-between" style={{ marginBottom: 6 }}>
-          <h1 style={{ fontSize: 18 }}>{cat.label}</h1>
+        <div className="detail-status">
+          <span className="ticket-label">Ticket #{complaint.ticketId || complaint.id}</span>
           <StatusBadge status={complaint.status} />
         </div>
-        <p className="muted" style={{ marginBottom: '1rem' }}>
-          {complaint.description}
+      </div>
+      <section className="detail-overview card">
+        <div className="detail-meta">
+          <span>
+            <Icon name="calendar" size={15} /> Submitted {timeAgo(complaint.createdAt)}
+          </span>
+          {complaint.location && (
+            <span>
+              <Icon name="pin" size={15} /> {complaint.location}
+            </span>
+          )}
+        </div>
+        <h1>{cat.label}</h1>
+        <p className="page-subtitle">
+          {complaint.description || 'No description was added to this report.'}
         </p>
-
-        <div className="map-mock">
-          <div className="map-pin">
-            <Icon name="pin" size={32} style={{ color: 'var(--teal)' }} />
+        <div className="progress-card">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Report progress</p>
+              <h2>Current status</h2>
+            </div>
+            <StatusBadge status={complaint.status} />
+          </div>
+          <div className="progress-steps">
+            {(complaint.timeline || []).map((event, index) => (
+              <div
+                className={`progress-step ${event.done ? 'complete' : ''}`}
+                key={`${event.status || event.label}-${index}`}
+              >
+                <span className="progress-step-marker">{event.done ? '✓' : index + 1}</span>
+                <span className="progress-step-copy">
+                  <strong>{event.label}</strong>
+                  <small>{event.time}</small>
+                </span>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="muted" style={{ marginBottom: '1.2rem' }}>
-          {complaint.location}
-        </div>
+      </section>
 
-        {complaint.assignedTo && (
-          <div className="card" style={{ marginBottom: '1.2rem' }}>
-            <div style={{ fontSize: 12, color: 'var(--slate)', marginBottom: 2 }}>Assigned to</div>
-            <div style={{ fontWeight: 600 }}>{complaint.assignedTo}</div>
+      <div className="detail-grid">
+        <section className="card detail-evidence">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Submitted evidence</p>
+              <h2>Issue photo</h2>
+            </div>
           </div>
-        )}
-
-        <h2>Timeline</h2>
-        <div className="section-gap">
-          {complaint.timeline.map((t, i) => (
-            <div key={i} className="timeline-item">
-              <div className="timeline-dot-col">
-                <div className={`timeline-dot ${!t.done ? 'pending' : ''}`}></div>
-                {i < complaint.timeline.length - 1 && <div className="timeline-line"></div>}
+          {complaint.photo ? (
+            <img
+              className="detail-photo"
+              src={complaint.photo}
+              alt={`Submitted photo for ${cat.label.toLowerCase()} report`}
+            />
+          ) : (
+            <div className="detail-photo-placeholder">
+              <Icon name={cat.icon} size={42} />
+            </div>
+          )}
+        </section>
+        <aside className="detail-side">
+          <section className="card detail-facts">
+            <p className="eyebrow">Report details</p>
+            <dl>
+              <div>
+                <dt>Category</dt>
+                <dd>{cat.label}</dd>
               </div>
               <div>
-                <div
-                  className="timeline-label"
-                  style={{ color: t.done ? 'var(--navy)' : 'var(--slate-light)' }}
-                >
-                  {t.label}
-                </div>
-                <div className="timeline-time">{t.time}</div>
+                <dt>Ticket</dt>
+                <dd>{complaint.ticketId || complaint.id}</dd>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {complaint.status === 'resolved' && complaint.rating === null && (
-          <button className="btn btn-gold section-gap" onClick={() => onRate(complaint.id)}>
-            ★ Rate this resolution
-          </button>
-        )}
-        {complaint.status === 'resolved' && complaint.rating !== null && (
-          <div className="card" style={{ marginTop: '1.2rem' }}>
-            <div style={{ fontSize: 12, color: 'var(--slate)', marginBottom: 4 }}>Your rating</div>
-            <div style={{ color: 'var(--gold)', fontSize: 18 }}>
-              {'★'.repeat(complaint.rating)}
-              {'☆'.repeat(5 - complaint.rating)}
-            </div>
-          </div>
-        )}
+              <div>
+                <dt>Submitted</dt>
+                <dd>{new Date(complaint.createdAt).toLocaleDateString()}</dd>
+              </div>
+              {complaint.location && (
+                <div>
+                  <dt>Location</dt>
+                  <dd>{complaint.location}</dd>
+                </div>
+              )}
+              {complaint.assignedTo && (
+                <div>
+                  <dt>Assigned worker</dt>
+                  <dd>{complaint.assignedTo}</dd>
+                </div>
+              )}
+            </dl>
+          </section>
+          {canRate && complaint.status === 'resolved' && complaint.rating == null && (
+            <section className="card rating-callout">
+              <Icon name="star" size={20} />
+              <div>
+                <strong>How was the resolution?</strong>
+                <p className="muted">Share feedback after reviewing the completed work.</p>
+                <button className="btn btn-primary" onClick={() => onRate(complaint.id)}>
+                  Rate this resolution
+                </button>
+              </div>
+            </section>
+          )}
+          {complaint.status === 'resolved' && complaint.rating != null && (
+            <section className="card rating-callout">
+              <Icon name="star" size={20} />
+              <div>
+                <strong>Your rating</strong>
+                <p className="rating-display" aria-label={`${complaint.rating} out of 5 stars`}>
+                  {'★'.repeat(complaint.rating)}
+                  {'☆'.repeat(5 - complaint.rating)}
+                </p>
+                {complaint.ratingComment && <p className="muted">{complaint.ratingComment}</p>}
+              </div>
+            </section>
+          )}
+        </aside>
       </div>
-    </>
+    </main>
   );
 }

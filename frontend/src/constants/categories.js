@@ -4,8 +4,8 @@ export const CATEGORIES = [
   { id: 'garbage', label: 'Garbage', icon: 'garbage' },
   { id: 'streetlight', label: 'Streetlight', icon: 'streetlight' },
   { id: 'water', label: 'Water Leak', icon: 'water' },
-  { id: 'road', label: 'Road Damage', icon: 'road' },
-  { id: 'sanitation', label: 'Sanitation', icon: 'sanitation' },
+  { id: 'drainage', label: 'Drainage', icon: 'water' },
+  { id: 'other', label: 'Other civic issue', icon: 'pin' },
 ];
 
 /** Look up a category by id, with a safe fallback for unknown ids. */

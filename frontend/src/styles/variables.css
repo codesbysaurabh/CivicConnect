@@ -1,24 +1,22 @@
-/* Design tokens: brand palette + dark-mode overrides */
 :root {
-  --navy: #1b2a4a;
-  --navy-light: #24365c;
-  --teal: #028090;
-  --mint: #02c39a;
-  --gold: #f4a825;
-  --offwhite: #f4f6f8;
+  --navy: #0b1c30;
+  --navy-light: #1e293b;
+  --teal: #0d5c46;
+  --mint: #8cd2b6;
+  --gold: #d97706;
+  --offwhite: #f8f9ff;
   --white: #ffffff;
-  --slate: #5a6b7a;
-  --slate-light: #8a99a6;
-  --line: #e1e6ea;
-  --danger: #d64545;
-  color-scheme: light dark;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --offwhite: #11182a;
-    --white: #1a2338;
-    --slate: #a7b2bc;
-    --slate-light: #7a8795;
-    --line: #2b3650;
-  }
+  --slate: #475569;
+  --slate-light: #64748b;
+  --line: #e2e8f0;
+  --danger: #ba1a1a;
+  --blue: #0284c7;
+  --blue-soft: #f0f9ff;
+  color-scheme: light;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
 }

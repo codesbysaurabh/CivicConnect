@@ -7,81 +7,90 @@ export function MyReportsScreen({ complaints, onOpen }) {
   const [filter, setFilter] = useState('all');
   const filtered = filter === 'all' ? complaints : complaints.filter((c) => c.status === filter);
   const filters = [
-    { id: 'all', label: 'All' },
+    { id: 'all', label: 'All reports' },
     { id: 'submitted', label: 'Submitted' },
     { id: 'progress', label: 'In progress' },
     { id: 'resolved', label: 'Resolved' },
   ];
 
   return (
-    <>
-      <div className="topbar">
-        <div className="topbar-title">My reports</div>
+    <main className="content page-content">
+      <div className="page-intro">
+        <div>
+          <p className="eyebrow">Resident portal</p>
+          <h1>My reports</h1>
+          <p className="page-subtitle">
+            Track the reports you have submitted and see their latest status.
+          </p>
+        </div>
+        <span className="report-total">
+          {complaints.length} {complaints.length === 1 ? 'report' : 'reports'}
+        </span>
       </div>
-      <div className="content">
-        <div
-          className="flex-gap"
-          style={{ overflowX: 'auto', paddingBottom: 4, marginBottom: '1rem' }}
-        >
-          {filters.map((f) => (
+
+      <div className="filter-row" role="group" aria-label="Filter reports by status">
+        {filters.map((f) => (
+          <button
+            key={f.id}
+            className={`filter-chip ${filter === f.id ? 'selected' : ''}`}
+            aria-pressed={filter === f.id}
+            onClick={() => setFilter(f.id)}
+          >
+            {f.label}
+            {f.id === 'all' && <span>{complaints.length}</span>}
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="empty-state card">
+          <div className="big-icon">
+            <Icon name="inbox" size={40} />
+          </div>
+          <strong>
+            {complaints.length
+              ? 'No reports match this filter'
+              : 'You have not submitted a report yet'}
+          </strong>
+          <p className="muted">Your reports and their progress will appear here.</p>
+        </div>
+      ) : (
+        <div className="report-card-list">
+          {filtered.map((c) => (
             <button
-              key={f.id}
-              className="btn btn-sm"
-              style={{
-                background: filter === f.id ? 'var(--teal)' : 'var(--white)',
-                color: filter === f.id ? 'white' : 'var(--navy)',
-                border: filter === f.id ? 'none' : '1.5px solid var(--line)',
-                whiteSpace: 'nowrap',
-              }}
-              onClick={() => setFilter(f.id)}
+              key={c.id}
+              className="card report-card report-card-button"
+              onClick={() => onOpen(c.id)}
             >
-              {f.label}
+              {c.photo && <img className="report-card-photo" src={c.photo} alt="" />}
+              <span className="report-card-body">
+                <span className="row-between report-card-top">
+                  <span className="report-card-heading">
+                    <span className="report-category-icon">
+                      <Icon name={categoryMeta(c.category).icon} size={22} />
+                    </span>
+                    <span>
+                      <strong className="report-card-title">
+                        {categoryMeta(c.category).label}
+                      </strong>
+                      <span className="report-card-meta">
+                        {c.ticketId || c.id} · {timeAgo(c.createdAt)}
+                      </span>
+                    </span>
+                  </span>
+                  <StatusBadge status={c.status} />
+                </span>
+                <span className="muted report-location">{c.description || c.location}</span>
+                {c.status === 'resolved' && c.rating == null && (
+                  <span className="rate-reminder">
+                    <Icon name="star" size={15} /> Rate this resolution
+                  </span>
+                )}
+              </span>
             </button>
           ))}
         </div>
-
-        {filtered.length === 0 ? (
-          <div className="empty-state">
-            <div className="big-icon">
-              <Icon name="inbox" size={40} />
-            </div>
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>No reports here</div>
-            <div className="muted">Reports matching this filter will show up here.</div>
-          </div>
-        ) : (
-          filtered.map((c) => (
-            <div
-              key={c.id}
-              className="card"
-              onClick={() => onOpen(c.id)}
-              style={{ cursor: 'pointer' }}
-            >
-              <div className="row-between" style={{ marginBottom: 8 }}>
-                <div className="flex-gap">
-                  <span style={{ fontSize: 20, display: 'inline-flex' }}>
-                    <Icon name={categoryMeta(c.category).icon} size={22} />
-                  </span>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>
-                      {categoryMeta(c.category).label}
-                    </div>
-                    <div style={{ fontSize: 12, color: 'var(--slate-light)' }}>
-                      {c.ticketId || c.id} · {timeAgo(c.createdAt)}
-                    </div>
-                  </div>
-                </div>
-                <StatusBadge status={c.status} />
-              </div>
-              <div className="muted">{c.description}</div>
-              {c.status === 'resolved' && c.rating === null && (
-                <div style={{ marginTop: 10, fontSize: 12, color: 'var(--gold)', fontWeight: 600 }}>
-                  ★ Tap to rate this resolution
-                </div>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-    </>
+      )}
+    </main>
   );
 }

@@ -134,29 +134,31 @@ export function CameraCapture({ photo, onCapture, onClear }) {
 
   return (
     <>
-      <div className="camera-box" onClick={openCamera} style={{ cursor: 'pointer' }}>
+      <button className="camera-box" type="button" onClick={openCamera}>
         <div style={{ fontSize: 32 }}>
           <Icon name="camera" size={32} />
         </div>
-        <div className="camera-cta">Tap to open camera</div>
-      </div>
+        <span className="camera-cta">Open camera</span>
+        <span className="camera-upload-hint">or choose a photo from your device</span>
+      </button>
+      <button
+        className="btn btn-outline camera-upload-button"
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+      >
+        Choose photo from device
+      </button>
       {camError && (
         <div style={{ marginTop: '-0.6rem', marginBottom: '0.8rem' }}>
           <div className="error-text" style={{ marginBottom: 6 }}>
             {camError}
           </div>
-          <button
-            className="btn btn-outline btn-sm"
-            onClick={() => fileInputRef.current && fileInputRef.current.click()}
-          >
-            Upload a photo instead
-          </button>
         </div>
       )}
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/heic"
         capture="environment"
         style={{ display: 'none' }}
         onChange={handleFilePick}

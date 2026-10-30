@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Icon } from '../components';
 
 export function LoginScreen({ onLogin }) {
   const [mode, setMode] = useState('login');
@@ -37,78 +38,92 @@ export function LoginScreen({ onLogin }) {
   };
 
   return (
-    <div className="login-screen">
-      <div className="brand-mark">
-        <div className="brand-pin"></div>
-        <span className="brand-name">CIVICCONNECT</span>
-      </div>
-      <h1 style={{ color: 'white', fontSize: 26 }}>Report civic issues in your city</h1>
-      <p className="muted" style={{ color: '#9FB3C8', marginBottom: '2rem' }}>
-        {mode === 'login'
-          ? 'Sign in with your email and password.'
-          : 'Create an account to get started.'}
-      </p>
-      <form onSubmit={submit}>
-        <label className="field-label" htmlFor="auth-email" style={{ color: '#C7D2DC' }}>
-          Email
-        </label>
-        <input
-          className="field-input"
-          id="auth-email"
-          type="email"
-          autoComplete="email"
-          required
-          maxLength={254}
-          placeholder="you@example.com"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1.5px solid #3A4E76',
-            color: 'white',
-            marginBottom: '1rem',
-          }}
-        />
-        <label className="field-label" htmlFor="auth-password" style={{ color: '#C7D2DC' }}>
-          Password
-        </label>
-        <input
-          className="field-input"
-          id="auth-password"
-          type="password"
-          autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-          required
-          minLength={8}
-          maxLength={128}
-          placeholder="At least 8 characters"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1.5px solid #3A4E76',
-            color: 'white',
-          }}
-        />
-        {error && (
-          <div className="error-text" role="alert">
-            {error}
+    <main className="login-page">
+      <section className="login-welcome">
+        <div className="login-brand">
+          <span className="brand-symbol">
+            <Icon name="pin" size={22} />
+          </span>
+          <strong>CivicConnect</strong>
+        </div>
+        <div className="login-welcome-copy">
+          <p className="eyebrow">Your community, connected</p>
+          <h1>Small reports can make a real difference.</h1>
+          <p>
+            Sign in to report local issues, follow their progress, and share feedback when they are
+            resolved.
+          </p>
+        </div>
+        <div className="login-welcome-footer">
+          <Icon name="check" size={17} /> A clear path from report to resolution
+        </div>
+      </section>
+      <section className="login-form-side">
+        <div className="login-card">
+          <p className="eyebrow">Resident portal</p>
+          <h2>{mode === 'login' ? 'Welcome back' : 'Create your account'}</h2>
+          <p className="login-form-intro">
+            {mode === 'login'
+              ? 'Sign in with the email and password linked to your account.'
+              : 'Register with your email to start using CivicConnect.'}
+          </p>
+          <form onSubmit={submit}>
+            <label className="field-label" htmlFor="auth-email">
+              Email address
+            </label>
+            <input
+              className="field-input"
+              id="auth-email"
+              type="email"
+              autoComplete="email"
+              required
+              maxLength={254}
+              placeholder="you@example.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+            <label className="field-label" htmlFor="auth-password">
+              Password
+            </label>
+            <input
+              className="field-input"
+              id="auth-password"
+              type="password"
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              required
+              minLength={8}
+              maxLength={128}
+              placeholder={mode === 'login' ? 'Enter your password' : 'At least 8 characters'}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+            {error && (
+              <div className="error-text" role="alert">
+                {error}
+              </div>
+            )}
+            <button className="btn btn-primary login-submit" type="submit" disabled={busy}>
+              <span>{busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}</span>
+              <Icon name="arrow" size={17} />
+            </button>
+          </form>
+          <div className="login-switch">
+            {mode === 'login' ? 'New to CivicConnect?' : 'Already have an account?'}{' '}
+            <button
+              onClick={() => {
+                setMode(mode === 'login' ? 'register' : 'login');
+                setError('');
+              }}
+            >
+              {mode === 'login' ? 'Create an account' : 'Sign in'}
+            </button>
           </div>
-        )}
-        <button className="btn btn-gold" type="submit" disabled={busy}>
-          {busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
-        </button>
-      </form>
-      <button
-        className="btn btn-outline"
-        type="button"
-        style={{ marginTop: '0.7rem', color: '#C7D2DC', borderColor: '#3A4E76' }}
-        onClick={() => {
-          setMode(mode === 'login' ? 'register' : 'login');
-          setError('');
-        }}
-      >
-        {mode === 'login' ? 'Create an account' : 'I already have an account'}
-      </button>
-    </div>
+          <p className="login-terms">
+            By continuing, you agree to use CivicConnect to submit accurate information about civic
+            issues.
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }

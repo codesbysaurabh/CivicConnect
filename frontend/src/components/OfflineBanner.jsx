@@ -1,6 +1,7 @@
 export function OfflineBanner() {
   return (
     <div
+      className="offline-banner"
       style={{
         background: '#FDEEDB',
         color: '#8A5A00',

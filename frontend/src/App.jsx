@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BottomNav, OfflineBanner, Toast } from './components';
+import { BottomNav, CitizenHeader, OfflineBanner, Toast } from './components';
 import { SCREENS, SCREENS_WITH_NAV } from './constants/screens.js';
 import { useComplaints } from './hooks/useComplaints.js';
 import {
@@ -100,7 +100,7 @@ export default function App() {
   };
 
   const handleUpdateStatus = async (id, newStatus, assigneeId) => {
-    if (!api) return;
+    if (!api) return false;
     try {
       const updated = await api.updateStatus(id, newStatus, assigneeId);
       if (updated)
@@ -108,8 +108,10 @@ export default function App() {
           current.map((complaint) => (complaint.id === id ? updated : complaint))
         );
       showToast('Report updated');
+      return true;
     } catch (error) {
       showToast(error.message || 'Could not update report');
+      return false;
     }
   };
 
@@ -195,6 +197,7 @@ export default function App() {
           onExitAdmin={() => setAdminMode(false)}
           onLogout={handleLogout}
         />
+        <Toast message={toast} />
       </div>
     );
   }
@@ -205,7 +208,6 @@ export default function App() {
       <HomeScreen
         complaints={complaints}
         myReports={myComplaints}
-        adminReportFeed={complaints}
         onOpen={openComplaint}
         onNavigate={setScreen}
         user={user}
@@ -220,6 +222,9 @@ export default function App() {
     body = (
       <ReportDetailScreen
         complaint={activeComplaint}
+        canRate={
+          user?.role !== 'admin' && myComplaints.some((complaint) => complaint.id === activeId)
+        }
         onBack={() => setScreen(SCREENS.REPORTS)}
         onRate={(id) => {
           setActiveId(id);
@@ -240,6 +245,16 @@ export default function App() {
   return (
     <div className="app-shell">
       {banner}
+      <CitizenHeader
+        screen={screen}
+        user={user}
+        myReports={myComplaints}
+        complaints={complaints}
+        onNavigate={setScreen}
+        onOpen={openComplaint}
+        onOpenAdmin={openAdmin}
+        onLogout={handleLogout}
+      />
       {body}
       {SCREENS_WITH_NAV.includes(screen) && (
         <BottomNav

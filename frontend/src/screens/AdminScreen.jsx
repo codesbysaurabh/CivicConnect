@@ -1,8 +1,14 @@
 import { useState } from 'react';
-import { Icon } from '../components';
+import { Icon, StatusBadge } from '../components';
 import { categoryMeta } from '../constants/categories.js';
 import { STATUS_OPTIONS } from '../constants/status.js';
 import { timeAgo } from '../utils/time.js';
+
+const TABS = [
+  { id: 'complaints', label: 'Complaints', icon: 'clipboard' },
+  { id: 'workers', label: 'Field workers', icon: 'worker' },
+  { id: 'reports', label: 'Reports', icon: 'chart' },
+];
 
 export function AdminScreen({
   complaints,
@@ -14,15 +20,21 @@ export function AdminScreen({
 }) {
   const [filter, setFilter] = useState('all');
   const [section, setSection] = useState('complaints');
+  const [selectedId, setSelectedId] = useState(null);
   const [workerName, setWorkerName] = useState('');
   const [workerArea, setWorkerArea] = useState('');
   const [workerPhone, setWorkerPhone] = useState('');
   const [savingWorker, setSavingWorker] = useState(false);
-  const filtered = filter === 'all' ? complaints : complaints.filter((c) => c.status === filter);
+  const [selectedStatus, setSelectedStatus] = useState('submitted');
+  const [selectedAssignee, setSelectedAssignee] = useState('');
+  const [savingComplaint, setSavingComplaint] = useState(false);
+
+  const filtered = (filter === 'all' ? complaints : complaints.filter((c) => c.status === filter))
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const selected = complaints.find((complaint) => complaint.id === selectedId);
   const resolvedComplaints = complaints.filter((complaint) => complaint.status === 'resolved');
-  const ratedComplaints = complaints.filter(
-    (complaint) => complaint.rating !== null && complaint.rating !== undefined
-  );
+  const ratedComplaints = complaints.filter((complaint) => complaint.rating != null);
   const averageRating = ratedComplaints.length
     ? ratedComplaints.reduce((total, complaint) => total + complaint.rating, 0) /
       ratedComplaints.length
@@ -64,6 +76,16 @@ export function AdminScreen({
   });
   const maxDailyCount = Math.max(1, ...weeklySubmissions.map((day) => day.count));
 
+  const openComplaint = (complaint) => {
+    setSelectedId(complaint.id);
+    setSelectedStatus(
+      complaint.status === 'assigned' || complaint.status === 'in_progress'
+        ? 'progress'
+        : complaint.status
+    );
+    setSelectedAssignee(complaint.assigneeId || '');
+  };
+
   const handleCreateWorker = async (event) => {
     event.preventDefault();
     if (!workerName.trim() || savingWorker) return;
@@ -84,160 +106,206 @@ export function AdminScreen({
     }
   };
 
-  return (
-    <div className="admin-layout">
-      <div className="admin-sidebar">
-        <div className="brand-mark" style={{ marginBottom: '2rem' }}>
-          <div className="brand-pin" style={{ width: 28, height: 28 }}></div>
-          <span className="brand-name" style={{ fontSize: 14 }}>
-            CIVICCONNECT
-          </span>
-        </div>
-        <button
-          className={`sidebar-link ${section === 'complaints' ? 'active' : ''}`}
-          type="button"
-          onClick={() => setSection('complaints')}
-        >
-          <Icon name="clipboard" size={16} /> All complaints
-        </button>
-        <button
-          className={`sidebar-link ${section === 'workers' ? 'active' : ''}`}
-          type="button"
-          onClick={() => setSection('workers')}
-        >
-          <Icon name="worker" size={16} /> Field workers
-        </button>
-        <button
-          className={`sidebar-link ${section === 'reports' ? 'active' : ''}`}
-          type="button"
-          onClick={() => setSection('reports')}
-        >
-          <Icon name="chart" size={16} /> Reports
-        </button>
-        <div
-          className="sidebar-link"
-          onClick={onExitAdmin}
-          style={{ marginTop: '2rem', borderTop: '1px solid #3A4E76', paddingTop: '1rem' }}
-        >
-          ← Exit admin view
-        </div>
-        <button
-          className="sidebar-link"
-          type="button"
-          onClick={onLogout}
-          style={{
-            width: '100%',
-            background: 'transparent',
-            border: 'none',
-            font: 'inherit',
-            textAlign: 'left',
-          }}
-        >
-          <Icon name="logout" size={16} /> Sign out
-        </button>
-      </div>
+  const saveComplaint = async () => {
+    if (!selected || savingComplaint) return;
+    setSavingComplaint(true);
+    try {
+      const nextStatus =
+        selectedStatus ===
+        (selected.status === 'assigned' || selected.status === 'in_progress'
+          ? 'progress'
+          : selected.status)
+          ? undefined
+          : selectedStatus;
+      const updated = await onUpdateStatus(selected.id, nextStatus, selectedAssignee || null);
+      if (updated) setSelectedId(null);
+    } finally {
+      setSavingComplaint(false);
+    }
+  };
 
-      <div className="admin-main">
+  return (
+    <div className="admin-app">
+      <header className="admin-header">
+        <button className="brand-lockup" onClick={onExitAdmin} aria-label="Return to CivicConnect">
+          <span className="brand-symbol">
+            <Icon name="pin" size={21} />
+          </span>
+          <span>
+            <strong>CivicConnect</strong>
+            <small>Municipal administration</small>
+          </span>
+        </button>
+        <nav className="admin-tabs" aria-label="Administration sections">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              className={section === tab.id ? 'active' : ''}
+              onClick={() => {
+                setSection(tab.id);
+                setSelectedId(null);
+              }}
+            >
+              <Icon name={tab.icon} size={17} />
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+        <div className="admin-header-actions">
+          <span className="admin-role-label">Admin portal</span>
+          <button className="header-signout" onClick={onExitAdmin}>
+            Resident view
+          </button>
+          <button className="header-signout" onClick={onLogout}>
+            <Icon name="logout" size={17} />
+            <span>Sign out</span>
+          </button>
+        </div>
+      </header>
+
+      <main className="admin-main">
         {section === 'workers' ? (
           <>
-            <div className="row-between" style={{ marginBottom: '1.5rem' }}>
+            <div className="page-intro">
               <div>
+                <p className="eyebrow">Workforce operations</p>
                 <h1>Field workers</h1>
-                <p className="muted">{workers.length} active workers</p>
+                <p className="page-subtitle">
+                  Manage the active worker roster and review current assignments.
+                </p>
               </div>
+              <span className="report-total">
+                {workers.length} active {workers.length === 1 ? 'worker' : 'workers'}
+              </span>
             </div>
-
-            <form className="card" onSubmit={handleCreateWorker}>
-              <h2>Add a field worker</h2>
-              <label className="field-label" htmlFor="worker-name">
-                Name
-              </label>
-              <input
-                className="field-input"
-                id="worker-name"
-                value={workerName}
-                onChange={(event) => setWorkerName(event.target.value)}
-                maxLength={80}
-                required
-              />
-              <label className="field-label" htmlFor="worker-area">
-                Area
-              </label>
-              <input
-                className="field-input"
-                id="worker-area"
-                value={workerArea}
-                onChange={(event) => setWorkerArea(event.target.value)}
-                maxLength={100}
-                placeholder="Optional"
-              />
-              <label className="field-label" htmlFor="worker-phone">
-                Phone
-              </label>
-              <input
-                className="field-input"
-                id="worker-phone"
-                type="tel"
-                value={workerPhone}
-                onChange={(event) => setWorkerPhone(event.target.value)}
-                maxLength={30}
-                placeholder="Optional"
-              />
-              <button
-                className="btn btn-primary"
-                type="submit"
-                disabled={savingWorker || !workerName.trim()}
-              >
-                {savingWorker ? 'Adding worker…' : 'Add worker'}
-              </button>
-            </form>
-
-            <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Area</th>
-                    <th>Phone</th>
-                    <th>Open assignments</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {workers.map((worker) => (
-                    <tr key={worker._id}>
-                      <td style={{ fontWeight: 600 }}>{worker.name}</td>
-                      <td>{worker.area || '—'}</td>
-                      <td>{worker.phone || '—'}</td>
-                      <td>
-                        {
-                          complaints.filter(
-                            (complaint) =>
-                              complaint.assigneeId === worker._id && complaint.status !== 'resolved'
-                          ).length
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                  {workers.length === 0 && (
-                    <tr>
-                      <td className="muted" colSpan={4}>
-                        No active field workers yet.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <section className="worker-section">
+              <div className="section-heading">
+                <div>
+                  <h2>Field worker roster</h2>
+                  <p className="muted">Contact and workload details from your active roster.</p>
+                </div>
+              </div>
+              {workers.length ? (
+                <div className="worker-grid">
+                  {workers.map((worker) => {
+                    const workload = complaints.filter(
+                      (complaint) =>
+                        complaint.assigneeId === worker._id && complaint.status !== 'resolved'
+                    ).length;
+                    return (
+                      <article className="card worker-card" key={worker._id}>
+                        <div className="worker-card-heading">
+                          <span className="worker-avatar" aria-hidden="true">
+                            {worker.name
+                              .split(/\s+/)
+                              .map((part) => part[0])
+                              .join('')
+                              .slice(0, 2)
+                              .toUpperCase()}
+                          </span>
+                          <div>
+                            <h3>{worker.name}</h3>
+                            <p>{worker.area || 'Area not specified'}</p>
+                          </div>
+                        </div>
+                        <dl className="worker-info">
+                          {worker.phone && (
+                            <div>
+                              <dt>Phone</dt>
+                              <dd>{worker.phone}</dd>
+                            </div>
+                          )}
+                          <div>
+                            <dt>Open assignments</dt>
+                            <dd>{workload}</dd>
+                          </div>
+                        </dl>
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="empty-state card">
+                  <Icon name="worker" size={36} />
+                  <strong>No field workers yet</strong>
+                  <p className="muted">Add a worker to make them available for assignment.</p>
+                </div>
+              )}
+            </section>
+            <section className="card worker-form-card">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">Roster management</p>
+                  <h2>Add a field worker</h2>
+                  <p className="muted">
+                    Only details supported by the worker roster are collected.
+                  </p>
+                </div>
+              </div>
+              <form className="worker-form" onSubmit={handleCreateWorker}>
+                <div>
+                  <label className="field-label" htmlFor="worker-name">
+                    Full name
+                  </label>
+                  <input
+                    className="field-input"
+                    id="worker-name"
+                    value={workerName}
+                    onChange={(event) => setWorkerName(event.target.value)}
+                    maxLength={80}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="field-label" htmlFor="worker-area">
+                    Area
+                  </label>
+                  <input
+                    className="field-input"
+                    id="worker-area"
+                    value={workerArea}
+                    onChange={(event) => setWorkerArea(event.target.value)}
+                    maxLength={100}
+                    placeholder="Optional"
+                  />
+                </div>
+                <div>
+                  <label className="field-label" htmlFor="worker-phone">
+                    Phone
+                  </label>
+                  <input
+                    className="field-input"
+                    id="worker-phone"
+                    type="tel"
+                    value={workerPhone}
+                    onChange={(event) => setWorkerPhone(event.target.value)}
+                    maxLength={30}
+                    placeholder="Optional"
+                  />
+                </div>
+                <button
+                  className="btn btn-primary"
+                  type="submit"
+                  disabled={savingWorker || !workerName.trim()}
+                >
+                  <Icon name="plus" size={17} />
+                  {savingWorker ? 'Adding worker…' : 'Add worker'}
+                </button>
+              </form>
+            </section>
           </>
         ) : section === 'reports' ? (
           <>
-            <div className="row-between" style={{ marginBottom: '1.5rem' }}>
+            <div className="page-intro">
               <div>
+                <p className="eyebrow">Live report data</p>
                 <h1>Reports overview</h1>
-                <p className="muted">Summary of submitted civic issues and resolutions</p>
+                <p className="page-subtitle">
+                  Summary calculated from {complaints.length} reports currently loaded from
+                  CivicConnect.
+                </p>
               </div>
             </div>
-
             <div className="report-summary-grid">
               <div className="card report-kpi">
                 <div className="muted">Total reports</div>
@@ -261,7 +329,6 @@ export function AdminScreen({
                 <div className="muted">{ratedComplaints.length} ratings</div>
               </div>
             </div>
-
             <div className="report-dashboard-grid">
               <section className="card report-chart-card">
                 <h2>Reports by status</h2>
@@ -282,7 +349,6 @@ export function AdminScreen({
                   </div>
                 ))}
               </section>
-
               <section className="card report-chart-card">
                 <h2>Reports by category</h2>
                 {categoryBreakdown.length ? (
@@ -305,7 +371,6 @@ export function AdminScreen({
                 )}
               </section>
             </div>
-
             <section className="card report-chart-card">
               <h2>New submissions · last 7 days</h2>
               <div className="report-trend-chart">
@@ -326,101 +391,208 @@ export function AdminScreen({
               </div>
             </section>
           </>
+        ) : selected ? (
+          <>
+            <div className="page-back-row">
+              <button className="text-back" onClick={() => setSelectedId(null)}>
+                <span aria-hidden="true">←</span> Back to complaints
+              </button>
+              <span className="ticket-label">Ticket #{selected.ticketId || selected.id}</span>
+            </div>
+            <div className="page-intro admin-detail-intro">
+              <div>
+                <p className="eyebrow">Complaint review</p>
+                <h1>{categoryMeta(selected.category).label}</h1>
+                <p className="page-subtitle">Reported {timeAgo(selected.createdAt)}</p>
+              </div>
+              <StatusBadge status={selected.status} />
+            </div>
+            <div className="admin-detail-grid">
+              <section className="card">
+                <h2>Issue details</h2>
+                {selected.photo && (
+                  <img
+                    className="admin-detail-photo"
+                    src={selected.photo}
+                    alt={`Submitted photo for ${categoryMeta(selected.category).label.toLowerCase()} report`}
+                  />
+                )}
+                <p className="detail-description">
+                  {selected.description || 'No description was provided.'}
+                </p>
+                {selected.location && (
+                  <p className="detail-location">
+                    <Icon name="pin" size={16} />
+                    {selected.location}
+                  </p>
+                )}
+                <div className="timeline-list">
+                  {(selected.timeline || []).map((event, index) => (
+                    <div
+                      className={`timeline-item ${event.done ? 'done' : ''}`}
+                      key={`${event.status || event.label}-${index}`}
+                    >
+                      <span className="timeline-marker">{event.done ? '✓' : index + 1}</span>
+                      <div>
+                        <strong>{event.label}</strong>
+                        <span>{event.time}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+              <section className="card assignment-card">
+                <p className="eyebrow">Review and assignment</p>
+                <h2>Update report</h2>
+                <label className="field-label" htmlFor="admin-status">
+                  Status
+                </label>
+                <select
+                  id="admin-status"
+                  className="field-select"
+                  value={selectedStatus}
+                  onChange={(event) => setSelectedStatus(event.target.value)}
+                >
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status.id} value={status.id}>
+                      {status.label}
+                    </option>
+                  ))}
+                </select>
+                <label className="field-label" htmlFor="admin-assignee">
+                  Field worker
+                </label>
+                <select
+                  id="admin-assignee"
+                  className="field-select"
+                  value={selectedAssignee}
+                  onChange={(event) => setSelectedAssignee(event.target.value)}
+                >
+                  <option value="">Unassigned</option>
+                  {workers.map((worker) => (
+                    <option key={worker._id} value={worker._id}>
+                      {worker.name}
+                      {worker.area ? ` · ${worker.area}` : ''}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  className="btn btn-primary"
+                  onClick={saveComplaint}
+                  disabled={savingComplaint}
+                >
+                  {savingComplaint ? 'Saving…' : 'Save changes'}
+                </button>
+                {selected.rating != null && (
+                  <div className="admin-existing-rating">
+                    <span>Citizen rating</span>
+                    <strong>
+                      {'★'.repeat(selected.rating)}
+                      {'☆'.repeat(5 - selected.rating)}
+                    </strong>
+                    {selected.ratingComment && <p>{selected.ratingComment}</p>}
+                  </div>
+                )}
+              </section>
+            </div>
+          </>
         ) : (
           <>
-            <div className="row-between" style={{ marginBottom: '1.5rem' }}>
+            <div className="page-intro">
               <div>
+                <p className="eyebrow">Operations</p>
                 <h1>Complaints</h1>
-                <p className="muted">
-                  {complaints.length} total ·{' '}
-                  {complaints.filter((c) => c.status !== 'resolved').length} open
+                <p className="page-subtitle">
+                  Review reports and update their status or worker assignment.
                 </p>
               </div>
+              <span className="report-total">{complaints.length} loaded</span>
             </div>
-
-            <div className="flex-gap" style={{ marginBottom: '1.2rem' }}>
-              {['all', 'submitted', 'progress', 'resolved'].map((value) => (
+            <div
+              className="filter-row admin-filter-row"
+              role="group"
+              aria-label="Filter complaints by status"
+            >
+              {[
+                { id: 'all', label: 'All reports' },
+                ...STATUS_OPTIONS.map((item) => ({
+                  ...item,
+                  label: item.label === 'In progress' ? item.label : item.label,
+                })),
+              ].map((item) => (
                 <button
-                  key={value}
-                  className="btn btn-sm"
-                  style={{
-                    background: filter === value ? 'var(--teal)' : 'var(--white)',
-                    color: filter === value ? 'white' : 'var(--navy)',
-                    border: filter === value ? 'none' : '1.5px solid var(--line)',
-                  }}
-                  onClick={() => setFilter(value)}
+                  key={item.id}
+                  className={`filter-chip ${filter === item.id ? 'selected' : ''}`}
+                  aria-pressed={filter === item.id}
+                  onClick={() => setFilter(item.id)}
                 >
-                  {value === 'all' ? 'All' : value === 'progress' ? 'In progress' : value}
+                  {item.label}
+                  {item.id === 'all' && <span>{complaints.length}</span>}
                 </button>
               ))}
             </div>
-
-            <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Category</th>
-                    <th>Location</th>
-                    <th>Status</th>
-                    <th>Assigned to</th>
-                    <th>Reported</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((complaint) => (
-                    <tr key={complaint.id}>
-                      <td style={{ fontWeight: 600 }}>{complaint.ticketId || complaint.id}</td>
-                      <td>
-                        <Icon name={categoryMeta(complaint.category).icon} size={16} />{' '}
-                        {categoryMeta(complaint.category).label}
-                      </td>
-                      <td style={{ maxWidth: 220 }}>{complaint.location}</td>
-                      <td>
-                        <select
-                          className="inline-select"
-                          value={complaint.status}
-                          onChange={(event) =>
-                            onUpdateStatus(complaint.id, event.target.value, complaint.assigneeId)
-                          }
-                        >
-                          {STATUS_OPTIONS.map((status) => (
-                            <option key={status.id} value={status.id}>
-                              {status.label}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td>
-                        <select
-                          className="inline-select"
-                          value={complaint.assigneeId || ''}
-                          onChange={(event) =>
-                            onUpdateStatus(
-                              complaint.id,
-                              complaint.status,
-                              event.target.value || null
-                            )
-                          }
-                        >
-                          <option value="">Unassigned</option>
-                          {workers.map((worker) => (
-                            <option key={worker._id} value={worker._id}>
-                              {worker.name}
-                              {worker.area ? ` · ${worker.area}` : ''}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="muted">{timeAgo(complaint.createdAt)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {filtered.length ? (
+              <div className="admin-complaint-list">
+                {filtered.map((complaint) => (
+                  <article className="card admin-complaint-card" key={complaint.id}>
+                    {complaint.photo ? (
+                      <img className="admin-complaint-photo" src={complaint.photo} alt="" />
+                    ) : (
+                      <span className="admin-complaint-icon">
+                        <Icon name={categoryMeta(complaint.category).icon} size={22} />
+                      </span>
+                    )}
+                    <div className="admin-complaint-copy">
+                      <div className="admin-complaint-top">
+                        <span className="ticket-label">#{complaint.ticketId || complaint.id}</span>
+                        <StatusBadge status={complaint.status} />
+                      </div>
+                      <h2>{categoryMeta(complaint.category).label}</h2>
+                      <p>{complaint.description || 'No description provided.'}</p>
+                      <span className="admin-complaint-meta">
+                        {complaint.location || 'Location not provided'} ·{' '}
+                        {timeAgo(complaint.createdAt)}
+                      </span>
+                    </div>
+                    <div className="admin-complaint-controls">
+                      <label className="field-label" htmlFor={`assignment-${complaint.id}`}>
+                        Assigned worker
+                      </label>
+                      <select
+                        id={`assignment-${complaint.id}`}
+                        className="field-select"
+                        value={complaint.assigneeId || ''}
+                        onChange={(event) =>
+                          onUpdateStatus(complaint.id, undefined, event.target.value || null)
+                        }
+                      >
+                        <option value="">Unassigned</option>
+                        {workers.map((worker) => (
+                          <option key={worker._id} value={worker._id}>
+                            {worker.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        className="btn btn-outline review-button"
+                        onClick={() => openComplaint(complaint)}
+                      >
+                        Review details <Icon name="arrow" size={15} />
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state card">
+                <Icon name="inbox" size={38} />
+                <strong>No complaints in this filter</strong>
+                <p className="muted">Reports will appear here as they are submitted.</p>
+              </div>
+            )}
           </>
         )}
-      </div>
+      </main>
     </div>
   );
 }

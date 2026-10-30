@@ -6,6 +6,12 @@ describe('categoryMeta', () => {
     expect(categoryMeta('pothole')).toEqual(CATEGORIES[0]);
   });
 
+  it('uses only categories accepted by the API', () => {
+    expect(CATEGORIES.map(({ id }) => id).sort()).toEqual(
+      ['pothole', 'garbage', 'streetlight', 'water', 'drainage', 'other'].sort()
+    );
+  });
+
   it('falls back safely for unknown ids', () => {
     expect(categoryMeta('mystery')).toEqual({ label: 'mystery', icon: 'pin' });
   });
