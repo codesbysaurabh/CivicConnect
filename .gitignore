@@ -12,3 +12,6 @@ coverage
 *.log
 .vscode/*
 !.vscode/extensions.json
+# Stitch reference files
+stitch-reference
+**/stitch-reference
