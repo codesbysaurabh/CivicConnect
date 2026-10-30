@@ -20,11 +20,16 @@ export function AdminScreen({
   const [savingWorker, setSavingWorker] = useState(false);
   const filtered = filter === 'all' ? complaints : complaints.filter((c) => c.status === filter);
   const resolvedComplaints = complaints.filter((complaint) => complaint.status === 'resolved');
-  const ratedComplaints = complaints.filter((complaint) => complaint.rating !== null && complaint.rating !== undefined);
+  const ratedComplaints = complaints.filter(
+    (complaint) => complaint.rating !== null && complaint.rating !== undefined
+  );
   const averageRating = ratedComplaints.length
-    ? ratedComplaints.reduce((total, complaint) => total + complaint.rating, 0) / ratedComplaints.length
+    ? ratedComplaints.reduce((total, complaint) => total + complaint.rating, 0) /
+      ratedComplaints.length
     : null;
-  const resolutionRate = complaints.length ? Math.round((resolvedComplaints.length / complaints.length) * 100) : 0;
+  const resolutionRate = complaints.length
+    ? Math.round((resolvedComplaints.length / complaints.length) * 100)
+    : 0;
   const statusBreakdown = [
     { id: 'submitted', label: 'Submitted' },
     { id: 'progress', label: 'In progress' },
@@ -120,7 +125,13 @@ export function AdminScreen({
           className="sidebar-link"
           type="button"
           onClick={onLogout}
-          style={{ width: '100%', background: 'transparent', border: 'none', font: 'inherit', textAlign: 'left' }}
+          style={{
+            width: '100%',
+            background: 'transparent',
+            border: 'none',
+            font: 'inherit',
+            textAlign: 'left',
+          }}
         >
           <Icon name="logout" size={16} /> Sign out
         </button>
@@ -138,7 +149,9 @@ export function AdminScreen({
 
             <form className="card" onSubmit={handleCreateWorker}>
               <h2>Add a field worker</h2>
-              <label className="field-label" htmlFor="worker-name">Name</label>
+              <label className="field-label" htmlFor="worker-name">
+                Name
+              </label>
               <input
                 className="field-input"
                 id="worker-name"
@@ -147,7 +160,9 @@ export function AdminScreen({
                 maxLength={80}
                 required
               />
-              <label className="field-label" htmlFor="worker-area">Area</label>
+              <label className="field-label" htmlFor="worker-area">
+                Area
+              </label>
               <input
                 className="field-input"
                 id="worker-area"
@@ -156,7 +171,9 @@ export function AdminScreen({
                 maxLength={100}
                 placeholder="Optional"
               />
-              <label className="field-label" htmlFor="worker-phone">Phone</label>
+              <label className="field-label" htmlFor="worker-phone">
+                Phone
+              </label>
               <input
                 className="field-input"
                 id="worker-phone"
@@ -166,7 +183,11 @@ export function AdminScreen({
                 maxLength={30}
                 placeholder="Optional"
               />
-              <button className="btn btn-primary" type="submit" disabled={savingWorker || !workerName.trim()}>
+              <button
+                className="btn btn-primary"
+                type="submit"
+                disabled={savingWorker || !workerName.trim()}
+              >
                 {savingWorker ? 'Adding worker…' : 'Add worker'}
               </button>
             </form>
@@ -188,10 +209,12 @@ export function AdminScreen({
                       <td>{worker.area || '—'}</td>
                       <td>{worker.phone || '—'}</td>
                       <td>
-                        {complaints.filter(
-                          (complaint) =>
-                            complaint.assigneeId === worker._id && complaint.status !== 'resolved'
-                        ).length}
+                        {
+                          complaints.filter(
+                            (complaint) =>
+                              complaint.assigneeId === worker._id && complaint.status !== 'resolved'
+                          ).length
+                        }
                       </td>
                     </tr>
                   ))}
@@ -222,7 +245,9 @@ export function AdminScreen({
               </div>
               <div className="card report-kpi">
                 <div className="muted">Open reports</div>
-                <div className="report-kpi-value">{complaints.length - resolvedComplaints.length}</div>
+                <div className="report-kpi-value">
+                  {complaints.length - resolvedComplaints.length}
+                </div>
               </div>
               <div className="card report-kpi">
                 <div className="muted">Resolution rate</div>
@@ -243,12 +268,15 @@ export function AdminScreen({
                 {statusBreakdown.map((status) => (
                   <div className="report-bar-row" key={status.id}>
                     <div className="row-between">
-                      <span>{status.label}</span><strong>{status.count}</strong>
+                      <span>{status.label}</span>
+                      <strong>{status.count}</strong>
                     </div>
                     <div className="report-bar-track">
                       <div
                         className="report-bar-fill"
-                        style={{ width: `${complaints.length ? (status.count / complaints.length) * 100 : 0}%` }}
+                        style={{
+                          width: `${complaints.length ? (status.count / complaints.length) * 100 : 0}%`,
+                        }}
                       />
                     </div>
                   </div>
@@ -257,19 +285,24 @@ export function AdminScreen({
 
               <section className="card report-chart-card">
                 <h2>Reports by category</h2>
-                {categoryBreakdown.length ? categoryBreakdown.map((category) => (
-                  <div className="report-bar-row" key={category.id}>
-                    <div className="row-between">
-                      <span>{category.label}</span><strong>{category.count}</strong>
+                {categoryBreakdown.length ? (
+                  categoryBreakdown.map((category) => (
+                    <div className="report-bar-row" key={category.id}>
+                      <div className="row-between">
+                        <span>{category.label}</span>
+                        <strong>{category.count}</strong>
+                      </div>
+                      <div className="report-bar-track">
+                        <div
+                          className="report-bar-fill report-bar-fill-gold"
+                          style={{ width: `${(category.count / maxCategoryCount) * 100}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="report-bar-track">
-                      <div
-                        className="report-bar-fill report-bar-fill-gold"
-                        style={{ width: `${(category.count / maxCategoryCount) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                )) : <p className="muted">No reports to summarize yet.</p>}
+                  ))
+                ) : (
+                  <p className="muted">No reports to summarize yet.</p>
+                )}
               </section>
             </div>
 
@@ -282,7 +315,9 @@ export function AdminScreen({
                     <div className="report-trend-track">
                       <div
                         className="report-trend-bar"
-                        style={{ height: `${day.count ? Math.max(8, (day.count / maxDailyCount) * 100) : 0}%` }}
+                        style={{
+                          height: `${day.count ? Math.max(8, (day.count / maxDailyCount) * 100) : 0}%`,
+                        }}
                       />
                     </div>
                     <span>{day.label}</span>
@@ -297,7 +332,8 @@ export function AdminScreen({
               <div>
                 <h1>Complaints</h1>
                 <p className="muted">
-                  {complaints.length} total · {complaints.filter((c) => c.status !== 'resolved').length} open
+                  {complaints.length} total ·{' '}
+                  {complaints.filter((c) => c.status !== 'resolved').length} open
                 </p>
               </div>
             </div>
@@ -349,7 +385,9 @@ export function AdminScreen({
                           }
                         >
                           {STATUS_OPTIONS.map((status) => (
-                            <option key={status.id} value={status.id}>{status.label}</option>
+                            <option key={status.id} value={status.id}>
+                              {status.label}
+                            </option>
                           ))}
                         </select>
                       </td>
@@ -358,13 +396,18 @@ export function AdminScreen({
                           className="inline-select"
                           value={complaint.assigneeId || ''}
                           onChange={(event) =>
-                            onUpdateStatus(complaint.id, complaint.status, event.target.value || null)
+                            onUpdateStatus(
+                              complaint.id,
+                              complaint.status,
+                              event.target.value || null
+                            )
                           }
                         >
                           <option value="">Unassigned</option>
                           {workers.map((worker) => (
                             <option key={worker._id} value={worker._id}>
-                              {worker.name}{worker.area ? ` · ${worker.area}` : ''}
+                              {worker.name}
+                              {worker.area ? ` · ${worker.area}` : ''}
                             </option>
                           ))}
                         </select>

@@ -42,15 +42,18 @@ export default function App() {
     }
     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
-    }).then(async (response) => {
-      if (!response.ok) throw new Error('Session expired');
-      const result = await response.json();
-      setUser(result.user);
-      setAuthed(true);
-    }).catch(() => {
-      localStorage.removeItem('civicconnect_token');
-      setAuthed(false);
-    }).finally(() => setAuthChecked(true));
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Session expired');
+        const result = await response.json();
+        setUser(result.user);
+        setAuthed(true);
+      })
+      .catch(() => {
+        localStorage.removeItem('civicconnect_token');
+        setAuthed(false);
+      })
+      .finally(() => setAuthChecked(true));
   }, []);
 
   useEffect(() => {
@@ -100,7 +103,10 @@ export default function App() {
     if (!api) return;
     try {
       const updated = await api.updateStatus(id, newStatus, assigneeId);
-      if (updated) setAdminComplaints((current) => current.map((complaint) => complaint.id === id ? updated : complaint));
+      if (updated)
+        setAdminComplaints((current) =>
+          current.map((complaint) => (complaint.id === id ? updated : complaint))
+        );
       showToast('Report updated');
     } catch (error) {
       showToast(error.message || 'Could not update report');
@@ -132,7 +138,9 @@ export default function App() {
     }
   };
 
-  const activeComplaint = [...complaints, ...myComplaints, ...adminComplaints].find((c) => c.id === activeId);
+  const activeComplaint = [...complaints, ...myComplaints, ...adminComplaints].find(
+    (c) => c.id === activeId
+  );
 
   const openAdmin = async () => {
     try {
@@ -143,8 +151,24 @@ export default function App() {
     }
   };
 
-  if (!authChecked) return <div className="app-shell" style={{ alignItems: 'center', justifyContent: 'center', display: 'flex' }}><div className="muted">Checking your session…</div></div>;
-  if (!authed) return <LoginScreen onLogin={(account) => { setUser(account); setAuthed(true); }} />;
+  if (!authChecked)
+    return (
+      <div
+        className="app-shell"
+        style={{ alignItems: 'center', justifyContent: 'center', display: 'flex' }}
+      >
+        <div className="muted">Checking your session…</div>
+      </div>
+    );
+  if (!authed)
+    return (
+      <LoginScreen
+        onLogin={(account) => {
+          setUser(account);
+          setAuthed(true);
+        }}
+      />
+    );
 
   if (status === 'connecting') {
     return (

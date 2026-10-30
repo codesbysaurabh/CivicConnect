@@ -34,7 +34,9 @@ function normalizeComplaint(item) {
     status,
     createdAt: item.createdAt,
     resolvedAt: item.resolvedAt || null,
-    location: item.location?.address || (coordinates.length === 2 ? `${coordinates[1]}, ${coordinates[0]}` : ''),
+    location:
+      item.location?.address ||
+      (coordinates.length === 2 ? `${coordinates[1]}, ${coordinates[0]}` : ''),
     latitude: coordinates[1],
     longitude: coordinates[0],
     photo: item.photo?.url || item.photo || null,
@@ -57,7 +59,8 @@ export function buildRestApi(baseUrl = 'http://localhost:5000/api') {
     const token = localStorage.getItem('civicconnect_token');
     const headers = new Headers(options.headers || {});
     if (token) headers.set('Authorization', `Bearer ${token}`);
-    if (options.body && !(options.body instanceof FormData)) headers.set('Content-Type', 'application/json');
+    if (options.body && !(options.body instanceof FormData))
+      headers.set('Content-Type', 'application/json');
 
     const response = await fetch(`${apiUrl}${path}`, { ...options, headers });
     const result = await response.json().catch(() => ({}));
@@ -137,7 +140,10 @@ export function buildRestApi(baseUrl = 'http://localhost:5000/api') {
       form.append('address', data.address || data.location || '');
       const result = await request('/complaints', { method: 'POST', body: form });
       const complaint = normalizeComplaint(result.complaint);
-      updateFeed([result.complaint, ...rawFeed.filter((item) => (item._id || item.id) !== complaint.id)]);
+      updateFeed([
+        result.complaint,
+        ...rawFeed.filter((item) => (item._id || item.id) !== complaint.id),
+      ]);
       return complaint;
     },
     updateStatus: async (id, status, assigneeId) => {
@@ -147,7 +153,8 @@ export function buildRestApi(baseUrl = 'http://localhost:5000/api') {
       if (status !== undefined && !assigningFirstWorker && status !== current?.status) {
         body.status = STATUS_TO_API[status] || status;
       }
-      if (assigneeId !== undefined && assigneeId !== current?.assigneeId) body.assignee = assigneeId;
+      if (assigneeId !== undefined && assigneeId !== current?.assigneeId)
+        body.assignee = assigneeId;
       if (!Object.keys(body).length) return current || null;
 
       const result = await request(`/admin/complaints/${id}`, {
@@ -155,7 +162,11 @@ export function buildRestApi(baseUrl = 'http://localhost:5000/api') {
         body: JSON.stringify(body),
       });
       const updated = normalizeComplaint(result.complaint);
-      updateFeed(rawFeed.map((complaint) => ((complaint._id || complaint.id) === id ? result.complaint : complaint)));
+      updateFeed(
+        rawFeed.map((complaint) =>
+          (complaint._id || complaint.id) === id ? result.complaint : complaint
+        )
+      );
       return updated;
     },
     submitFeedback: async (id, rating, comment = '') => {
@@ -164,7 +175,11 @@ export function buildRestApi(baseUrl = 'http://localhost:5000/api') {
         body: JSON.stringify({ stars: rating, comment }),
       });
       const updated = normalizeComplaint(result.complaint);
-      updateFeed(rawFeed.map((complaint) => ((complaint._id || complaint.id) === id ? result.complaint : complaint)));
+      updateFeed(
+        rawFeed.map((complaint) =>
+          (complaint._id || complaint.id) === id ? result.complaint : complaint
+        )
+      );
       return updated;
     },
     seedIfEmpty: async () => {},

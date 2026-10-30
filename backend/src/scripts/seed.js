@@ -5,7 +5,9 @@ import { User } from '../models/User.js';
 import { Worker } from '../models/Worker.js';
 
 if (process.env.SEED_DEMO_DATA !== 'true') {
-  console.log('ℹ Demo data seeding is disabled. Set SEED_DEMO_DATA=true in backend/.env to opt in.');
+  console.log(
+    'ℹ Demo data seeding is disabled. Set SEED_DEMO_DATA=true in backend/.env to opt in.'
+  );
   process.exit(0);
 }
 
@@ -37,73 +39,110 @@ try {
   console.log(`✔ Ensured ${workers.length} field workers (${env.nodeEnv})`);
 
   const reporterEmail = (process.env.DEMO_REPORTER_EMAIL || env.adminEmails[0] || '').toLowerCase();
-  const reporter = (reporterEmail ? await User.findOne({ email: reporterEmail }) : null)
-    || await User.findOne().sort({ createdAt: 1 });
+  const reporter =
+    (reporterEmail ? await User.findOne({ email: reporterEmail }) : null) ||
+    (await User.findOne().sort({ createdAt: 1 }));
   if (!reporter) {
-    console.log('ℹ Register an account with the app, then rerun npm run backend:seed to add the sample reports.');
+    console.log(
+      'ℹ Register an account with the app, then rerun npm run backend:seed to add the sample reports.'
+    );
   } else {
     const reportSeeds = [
       {
-        ticketId: 'CC-DEMO01', category: 'pothole', description: 'Large pothole near the bus stop; it is difficult for cyclists to avoid.',
-        status: 'submitted', days: 1, address: 'Green Park Main Road, Zone A', coordinates: [77.2066, 28.5580],
-        history: [{ status: 'submitted', note: 'Complaint submitted', at: daysAgo(1) }], worker: null, color: '#db715e',
+        ticketId: 'CC-DEMO01',
+        category: 'pothole',
+        description: 'Large pothole near the bus stop; it is difficult for cyclists to avoid.',
+        status: 'submitted',
+        days: 1,
+        address: 'Green Park Main Road, Zone A',
+        coordinates: [77.2066, 28.558],
+        history: [{ status: 'submitted', note: 'Complaint submitted', at: daysAgo(1) }],
+        worker: null,
+        color: '#db715e',
       },
       {
-        ticketId: 'CC-DEMO02', category: 'garbage', description: 'The collection point has overflowed and needs a cleanup.',
-        status: 'assigned', days: 2, address: 'Aurobindo Marg, Zone B', coordinates: [77.2000, 28.5550],
+        ticketId: 'CC-DEMO02',
+        category: 'garbage',
+        description: 'The collection point has overflowed and needs a cleanup.',
+        status: 'assigned',
+        days: 2,
+        address: 'Aurobindo Marg, Zone B',
+        coordinates: [77.2, 28.555],
         history: [
           { status: 'submitted', note: 'Complaint submitted', at: daysAgo(2) },
           { status: 'assigned', note: 'Assigned to field worker', at: daysAgo(1) },
-        ], worker: 'Sunita Devi', color: '#5caa7f',
+        ],
+        worker: 'Sunita Devi',
+        color: '#5caa7f',
       },
       {
-        ticketId: 'CC-DEMO03', category: 'streetlight', description: 'Streetlight has stopped working on the walking path.',
-        status: 'in_progress', days: 4, address: 'Sector 14 walking path, Zone C', coordinates: [77.2120, 28.5620],
+        ticketId: 'CC-DEMO03',
+        category: 'streetlight',
+        description: 'Streetlight has stopped working on the walking path.',
+        status: 'in_progress',
+        days: 4,
+        address: 'Sector 14 walking path, Zone C',
+        coordinates: [77.212, 28.562],
         history: [
           { status: 'submitted', note: 'Complaint submitted', at: daysAgo(4) },
           { status: 'assigned', note: 'Assigned to field worker', at: daysAgo(3) },
           { status: 'in_progress', note: 'Repair work started', at: daysAgo(1) },
-        ], worker: 'Imran Khan', color: '#d9a441',
+        ],
+        worker: 'Imran Khan',
+        color: '#d9a441',
       },
       {
-        ticketId: 'CC-DEMO04', category: 'water', description: 'A leaking public water pipe is flooding the roadside.',
-        status: 'resolved', days: 7, address: 'Market Lane, Zone D', coordinates: [77.1960, 28.5600],
+        ticketId: 'CC-DEMO04',
+        category: 'water',
+        description: 'A leaking public water pipe is flooding the roadside.',
+        status: 'resolved',
+        days: 7,
+        address: 'Market Lane, Zone D',
+        coordinates: [77.196, 28.56],
         history: [
           { status: 'submitted', note: 'Complaint submitted', at: daysAgo(7) },
           { status: 'assigned', note: 'Assigned to field worker', at: daysAgo(6) },
           { status: 'in_progress', note: 'Repair work started', at: daysAgo(3) },
           { status: 'resolved', note: 'Leak repaired and area cleaned', at: daysAgo(1) },
-        ], worker: 'Priya Sharma', color: '#4a9bc7',
+        ],
+        worker: 'Priya Sharma',
+        color: '#4a9bc7',
       },
     ];
 
     const existingSeedCount = await Complaint.countDocuments({ ticketId: /^CC-DEMO/ });
     if (existingSeedCount > 0) {
-      console.log(`ℹ Found ${existingSeedCount} existing demo reports; skipped sample report seeding to preserve any intentional deletions.`);
+      console.log(
+        `ℹ Found ${existingSeedCount} existing demo reports; skipped sample report seeding to preserve any intentional deletions.`
+      );
     } else {
-      const results = await Promise.all(reportSeeds.map((seed) => {
-        const { days, address, coordinates, worker, color, ...report } = seed;
-        const resolvedAt = report.status === 'resolved' ? report.history.at(-1).at : undefined;
-        return Complaint.updateOne(
-          { ticketId: report.ticketId },
-          {
-            $setOnInsert: {
-              ...report,
-              reporter: reporter._id,
-              photo: { url: demoPhoto(report.category, color) },
-              location: { type: 'Point', coordinates, address },
-              assignee: worker ? workerByName.get(worker)._id : null,
-              resolvedAt,
-              createdAt: daysAgo(days),
+      const results = await Promise.all(
+        reportSeeds.map((seed) => {
+          const { days, address, coordinates, worker, color, ...report } = seed;
+          const resolvedAt = report.status === 'resolved' ? report.history.at(-1).at : undefined;
+          return Complaint.updateOne(
+            { ticketId: report.ticketId },
+            {
+              $setOnInsert: {
+                ...report,
+                reporter: reporter._id,
+                photo: { url: demoPhoto(report.category, color) },
+                location: { type: 'Point', coordinates, address },
+                assignee: worker ? workerByName.get(worker)._id : null,
+                resolvedAt,
+                createdAt: daysAgo(days),
+              },
             },
-          },
-          { upsert: true }
-        );
-      }));
+            { upsert: true }
+          );
+        })
+      );
       const inserted = results.filter((result) => result.upsertedCount > 0).length;
       console.log(`✔ Seeded ${inserted} sample complaints`);
       if (reporter.role !== 'admin') {
-        console.log('ℹ This account can view its sample reports. Register an email listed in ADMIN_EMAILS to manage reports in the admin view.');
+        console.log(
+          'ℹ This account can view its sample reports. Register an email listed in ADMIN_EMAILS to manage reports in the admin view.'
+        );
       }
     }
   }

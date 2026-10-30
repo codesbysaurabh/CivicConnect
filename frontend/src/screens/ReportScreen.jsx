@@ -85,7 +85,8 @@ export function ReportScreen({ onSubmit, onBack }) {
             }}
           >
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--teal)', marginBottom: 2 }}>
-              <Icon name="pin" size={14} /> {coordinates ? 'Location captured' : 'Location unavailable'}
+              <Icon name="pin" size={14} />{' '}
+              {coordinates ? 'Location captured' : 'Location unavailable'}
             </div>
             <div style={{ fontSize: 12.5, color: 'var(--navy)' }}>{location}</div>
           </div>

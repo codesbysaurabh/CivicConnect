@@ -32,9 +32,10 @@ export function HomeScreen({
     .flatMap((complaint) =>
       (complaint.timeline || [])
         .map((event, index) => ({ complaint, event, index }))
-        .filter(({ event }) =>
-          (event.recorded ?? event.done) &&
-          (isAdmin ? event.label === 'Submitted' : event.label !== 'Submitted')
+        .filter(
+          ({ event }) =>
+            (event.recorded ?? event.done) &&
+            (isAdmin ? event.label === 'Submitted' : event.label !== 'Submitted')
         )
         .map(({ complaint, event, index }) => ({
           id: `${complaint.id}:${index}:${event.at || event.time}`,
@@ -75,7 +76,9 @@ export function HomeScreen({
           onClick={() => setNotificationsOpen((open) => !open)}
         >
           <Icon name="bell" size={18} />
-          {unreadCount > 0 && <span className="notification-count">{unreadCount > 9 ? '9+' : unreadCount}</span>}
+          {unreadCount > 0 && (
+            <span className="notification-count">{unreadCount > 9 ? '9+' : unreadCount}</span>
+          )}
         </button>
       </div>
       {notificationsOpen && (
@@ -121,7 +124,9 @@ export function HomeScreen({
                     >
                       <span className="notification-dot" aria-hidden="true" />
                       <span className="notification-copy">
-                        <strong>{item.category} · {item.ticketId}</strong>
+                        <strong>
+                          {item.category} · {item.ticketId}
+                        </strong>
                         <span>{item.label}</span>
                         <time dateTime={new Date(item.at).toISOString()}>
                           {new Date(item.at).toLocaleString()}
@@ -137,7 +142,10 @@ export function HomeScreen({
       )}
       <div className="content">
         {canCreateReports && (
-          <div className="card" style={{ background: 'var(--navy)', color: 'white', border: 'none' }}>
+          <div
+            className="card"
+            style={{ background: 'var(--navy)', color: 'white', border: 'none' }}
+          >
             <div className="row-between">
               <div>
                 <div style={{ fontSize: 13, color: '#9FB3C8', marginBottom: 4 }}>

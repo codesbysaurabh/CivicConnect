@@ -43,17 +43,23 @@ export function useComplaints(authenticated = false) {
       setApi(resolved);
       setStatus(mode);
       if (resolved.getMyComplaints) {
-        resolved.getMyComplaints().then((reports) => {
-          if (!cancelled) setMyComplaints(reports);
-        }).catch(() => {});
+        resolved
+          .getMyComplaints()
+          .then((reports) => {
+            if (!cancelled) setMyComplaints(reports);
+          })
+          .catch(() => {});
       }
-      unsubscribe = resolved.subscribeComplaints((items) => {
-        if (cancelled) return;
-        setComplaints(items);
-        setStatus(mode === 'ready' ? 'ready' : 'offline');
-      }, () => {
-        if (!cancelled) setStatus('offline');
-      });
+      unsubscribe = resolved.subscribeComplaints(
+        (items) => {
+          if (cancelled) return;
+          setComplaints(items);
+          setStatus(mode === 'ready' ? 'ready' : 'offline');
+        },
+        () => {
+          if (!cancelled) setStatus('offline');
+        }
+      );
     })();
 
     return () => {

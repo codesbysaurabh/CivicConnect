@@ -45,16 +45,16 @@ The seed command adds four field workers and four sample reports across the work
 
 ## Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the frontend development server |
-| `npm run build` | Build frontend assets into `frontend/dist/` |
-| `npm run preview` | Preview the frontend production build |
-| `npm run lint` | Lint frontend and backend source |
-| `npm test` | Run frontend unit tests |
-| `npm run backend:dev` | Start the API in watch mode |
-| `npm run backend:start` | Start the API |
-| `npm run backend:seed` | Seed demo workers and reports |
+| Command                 | Purpose                                     |
+| ----------------------- | ------------------------------------------- |
+| `npm run dev`           | Start the frontend development server       |
+| `npm run build`         | Build frontend assets into `frontend/dist/` |
+| `npm run preview`       | Preview the frontend production build       |
+| `npm run lint`          | Lint frontend and backend source            |
+| `npm test`              | Run frontend unit tests                     |
+| `npm run backend:dev`   | Start the API in watch mode                 |
+| `npm run backend:start` | Start the API                               |
+| `npm run backend:seed`  | Seed demo workers and reports               |
 
 ## Project structure
 

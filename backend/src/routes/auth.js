@@ -9,7 +9,12 @@ import { hashPassword, verifyPassword } from '../utils/password.js';
 
 const router = Router();
 const credentials = z.object({
-  email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+  email: z
+    .string()
+    .trim()
+    .email()
+    .max(254)
+    .transform((value) => value.toLowerCase()),
   password: z.string().min(8).max(128),
 });
 const authLimiter = rateLimit({
@@ -25,13 +30,15 @@ router.post(
   authLimiter,
   asyncHandler(async (req, res) => {
     const { email, password } = credentials.parse(req.body);
-    if (await User.exists({ email })) throw new HttpError(409, 'An account with this email already exists.');
+    if (await User.exists({ email }))
+      throw new HttpError(409, 'An account with this email already exists.');
     const role = env.adminEmails.includes(email) ? 'admin' : 'citizen';
     let user;
     try {
       user = await User.create({ email, passwordHash: await hashPassword(password), role });
     } catch (error) {
-      if (error?.code === 11000) throw new HttpError(409, 'An account with this email already exists.');
+      if (error?.code === 11000)
+        throw new HttpError(409, 'An account with this email already exists.');
       throw error;
     }
     res.status(201).json({ token: signToken(user), user });

@@ -14,11 +14,11 @@ services/complaints    adapts app operations to the selected data source
 
 The `ComplaintsApi` contract is documented in `frontend/src/services/complaints/types.js`.
 
-| Adapter | Use |
-| --- | --- |
-| `restApi.js` | Authenticated users; sends JWTs to the Express API and polls for updates every 15 seconds. |
-| `memoryApi.js` | In-memory demo data for the unauthenticated fallback; data resets when the page reloads. |
-| `claudeDbApi.js` | Persistent Claude artifact database when that runtime is available. |
+| Adapter          | Use                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| `restApi.js`     | Authenticated users; sends JWTs to the Express API and polls for updates every 15 seconds. |
+| `memoryApi.js`   | In-memory demo data for the unauthenticated fallback; data resets when the page reloads.   |
+| `claudeDbApi.js` | Persistent Claude artifact database when that runtime is available.                        |
 
 `services/complaints/index.js` selects the REST adapter after authentication or when `VITE_API_URL` is configured. The REST adapter translates the backend's status names and MongoDB records into the view model, converts captured photos to multipart uploads, and handles reports with or without GPS coordinates.
 
